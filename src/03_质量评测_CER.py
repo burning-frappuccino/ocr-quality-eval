@@ -30,6 +30,14 @@ EVAL_DIR.mkdir(exist_ok=True)
 OUT_DIR.mkdir(exist_ok=True)
 
 ANSWERS_CSV = EVAL_DIR / "answers.csv"
+# 容错：如果 answers.csv 被 Excel/WPS 锁住没能更新，
+# 而存在更新的 answers_new.csv，则以更新的那个为准。
+# 正常情况下 eval/ 里只有一个 answers.csv，这段不会生效。
+_alt = EVAL_DIR / "answers_new.csv"
+if _alt.exists() and (not ANSWERS_CSV.exists()
+                      or _alt.stat().st_mtime > ANSWERS_CSV.stat().st_mtime):
+    ANSWERS_CSV = _alt
+    print(f"（answers.csv 被其他程序占用，改用更新版 {_alt.name}）")
 REVIEW_CSV = OUT_DIR / "人工复核清单.csv"
 REPORT_JSON = OUT_DIR / "评测报告.json"
 
